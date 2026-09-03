@@ -1,10 +1,10 @@
 package com.ms.qrcode.qrcode;
 
 import com.ms.qrcode.qrcode.dto.TipoQrCode;
-import org.springframework.stereotype.Service;
-
+import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import org.springframework.stereotype.Service;
 
 @Service
 public class QrCodeService {
@@ -22,6 +22,6 @@ public class QrCodeService {
     }
 
     public byte[] baixarQrCode(String qrCodeUrl) throws Exception {
-        return new java.net.URL(qrCodeUrl).openStream().readAllBytes();
+        return new URL(qrCodeUrl).openStream().readAllBytes();
     }
 }
