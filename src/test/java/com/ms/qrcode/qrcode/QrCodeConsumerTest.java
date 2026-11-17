@@ -16,7 +16,7 @@ class QrCodeConsumerTest {
     void sucessoRespondeComMesmaIdentidadeETipo(TipoQrCode tipo) throws Exception {
         var service=mock(QrCodeService.class); KafkaTemplate<String,QrCodeResponse> kafka=mock(KafkaTemplate.class);
         when(service.gerarUrlQrCode("https://example.invalid",10L,"Tema",tipo)).thenReturn("https://example.invalid/qr");
-        new QrCodeConsumer(service,kafka).consumir(new ObjectMapper().writeValueAsString(new QrCodeRequest(10L,"https://example.invalid","Tema",tipo)));
+        new QrCodeConsumer(service,kafka).consumir(new ObjectMapper().writeValueAsString(new QrCodeRequest(10L,"https://example.invalid","Tema",tipo,null)));
         verify(kafka).send("qrcode.gerar.response","10-"+tipo,new QrCodeResponse(10L,"https://example.invalid/qr","SUCCESS",null,tipo));
     }
     @Test void falhaRespondeErrorSemUrl() throws Exception {

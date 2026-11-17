@@ -25,7 +25,7 @@ public class QrCodeController {
     public ResponseEntity<byte[]> gerar(@RequestBody QrCodeRequest request) throws Exception {
         try {
             return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG)
-                    .body(qrCodeService.gerarImagem(request.baseUrl(), request.eventoId(), request.tipo()));
+                    .body(qrCodeService.gerarImagem(request.baseUrl(), request.eventoId(), request.tipo(), request.codigo()));
         } catch (IllegalArgumentException erro) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, erro.getMessage());
         }
