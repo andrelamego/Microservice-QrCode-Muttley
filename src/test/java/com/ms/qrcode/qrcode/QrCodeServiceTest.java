@@ -26,19 +26,19 @@ class QrCodeServiceTest {
 
     @ParameterizedTest @CsvSource({"INSCRICAO","CONFIRMACAO"})
     void geraPngValidoSemAcessarServicoExterno(TipoQrCode tipo) throws Exception {
-        byte[] imagem=new QrCodeService().gerarImagem("https://example.invalid/",10L,tipo);
+        byte[] imagem=new QrCodeService().gerarImagem("https://example.invalid/",10L,tipo,"a+b/c");
         assertThat(imagem).startsWith((byte)0x89,(byte)0x50,(byte)0x4e,(byte)0x47);
         assertThat(ImageIO.read(new ByteArrayInputStream(imagem))).isNotNull()
                 .extracting(img -> img.getWidth(),img -> img.getHeight()).containsExactly(300,300);
         var bitmap = new BinaryBitmap(new HybridBinarizer(new BufferedImageLuminanceSource(ImageIO.read(new ByteArrayInputStream(imagem)))));
         String destino = new MultiFormatReader().decode(bitmap).getText();
         assertThat(destino).isEqualTo("https://example.invalid/eventos/10" +
-                (tipo == TipoQrCode.CONFIRMACAO ? "/confirmar-presenca" : ""));
+                (tipo == TipoQrCode.CONFIRMACAO ? "/confirmar-presenca?codigo=a%2Bb%2Fc" : ""));
     }
 
     @ParameterizedTest @CsvSource({"javascript:alert(1)","https://usuario:senha@example.invalid","https://example.invalid?x=1"})
     void rejeitaBaseUrlInsegura(String baseUrl) {
-        assertThatThrownBy(() -> new QrCodeService().gerarImagem(baseUrl,10L,TipoQrCode.INSCRICAO))
+        assertThatThrownBy(() -> new QrCodeService().gerarImagem(baseUrl,10L,TipoQrCode.INSCRICAO,null))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 }

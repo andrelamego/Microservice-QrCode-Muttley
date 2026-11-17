@@ -21,14 +21,14 @@ public class QrCodeService {
     private static final String QUICKCHART_BASE = "https://quickchart.io/qr";
 
     public String gerarUrlQrCode(String baseUrl, Long eventoId, String eventoTema, TipoQrCode tipo) {
-        String urlDestino = destino(baseUrl, eventoId, tipo);
+        String urlDestino = destino(baseUrl, eventoId, tipo, null);
 
         String encoded = URLEncoder.encode(urlDestino, StandardCharsets.UTF_8);
         return QUICKCHART_BASE + "?text=" + encoded + "&size=300&margin=2";
     }
 
-    public byte[] gerarImagem(String baseUrl, Long eventoId, TipoQrCode tipo) throws WriterException, IOException {
-        var matriz = new QRCodeWriter().encode(destino(baseUrl, eventoId, tipo), BarcodeFormat.QR_CODE,
+    public byte[] gerarImagem(String baseUrl, Long eventoId, TipoQrCode tipo, String codigo) throws WriterException, IOException {
+        var matriz = new QRCodeWriter().encode(destino(baseUrl, eventoId, tipo, codigo), BarcodeFormat.QR_CODE,
                 300, 300, Map.of(EncodeHintType.CHARACTER_SET, "UTF-8", EncodeHintType.MARGIN, 2));
         try (var output = new ByteArrayOutputStream()) {
             MatrixToImageWriter.writeToStream(matriz, "PNG", output);
@@ -36,7 +36,7 @@ public class QrCodeService {
         }
     }
 
-    private String destino(String baseUrl, Long eventoId, TipoQrCode tipo) {
+    private String destino(String baseUrl, Long eventoId, TipoQrCode tipo, String codigo) {
         if (baseUrl == null || eventoId == null || eventoId <= 0 || tipo == null) {
             throw new IllegalArgumentException("Base URL, evento e tipo de QR Code são obrigatórios.");
         }
@@ -47,7 +47,12 @@ public class QrCodeService {
             throw new IllegalArgumentException("Base URL deve ser HTTP(S), sem credenciais, query ou fragmento.");
         }
         String base = baseUrl.replaceAll("/+$", "");
-        return base + "/eventos/" + eventoId + (tipo == TipoQrCode.CONFIRMACAO ? "/confirmar-presenca" : "");
+        if (tipo != TipoQrCode.CONFIRMACAO) {
+            return base + "/eventos/" + eventoId;
+        }
+        // O código prova que quem confirma leu o QR exibido no evento.
+        return base + "/eventos/" + eventoId + "/confirmar-presenca"
+                + (codigo == null ? "" : "?codigo=" + URLEncoder.encode(codigo, StandardCharsets.UTF_8));
     }
 
     public byte[] baixarQrCode(String qrCodeUrl) throws Exception {
